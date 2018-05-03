@@ -1,6 +1,8 @@
 # /usr/bin/Python2
 #coding=utf8
 
+import random
+
 def loadfile(path):
     with open(path,"r") as f:
         for i,line in enumerate(f):
@@ -32,16 +34,22 @@ def read_movies(path = "movies.dat"):
         movies.append(line.split("::"))
     return movies
 
-def read_ratings(path):
-    """
+def read_ratings(path,pivot = 0.8):
+    """ 
         Return:
-            rating的list形式，形式为（UserId，movieID，Rating，tempstamp）
+                        点击的字典形式，格式为{userId : { movieId : rating}}
     """
-    ratings = dict()
+    train_set = dict()
+    test_set = dict() 
+    
     for line in loadfile(path):
         user,movie,rating,_ = line.split("::")
-        ratings.setdefault(user,{});
-        ratings[user][movie] = int(rating)
+        if random.random() < pivot:
+            train_set.setdefault(user,{})
+            train_set[user][movie] = int(rating)
+        else:
+            test_set.setdefault(user,{})
+            test_set[user][movie] = int(rating)
     
-    return ratings
+    return train_set,test_set
 
