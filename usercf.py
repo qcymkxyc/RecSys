@@ -7,6 +7,7 @@ import math
 from operator import itemgetter
 import pickle
 import os
+import sys
 
 class UserCF(object):
     """基于用户的协同过滤"""
@@ -16,6 +17,8 @@ class UserCF(object):
         
         #用户相似性矩阵
         self.user_sim_mat = None
+        #电影个数
+        self.movie_count = 0
         
     
     @staticmethod
@@ -55,6 +58,9 @@ class UserCF(object):
                 movie_user_mat.setdefault(movie,set());
                 movie_user_mat[movie].add(user)
         print("倒排矩阵计算完成")
+        
+        #统计电影的个数
+        self.movie_count = len(movie_user_mat)
         
         print("开始统计用户共同爱好电影个数.....")
         #用户共同爱好电影个数统计
@@ -99,49 +105,49 @@ class UserCF(object):
         
         return dict(sorted(rank.items(),key = itemgetter(1),reverse = True)[:N])
     
-    def evalute(self,N = 10,K = 80):
+    def evalute(self,N = 50,K = 80):
         """"""
-        print("Presion : {}".format(self.presion(N, K)))
+        print("开始计算评价指标....")
+        print("Precision : {}".format(self.precision(N, K)))
         print("Recall : {}".format(self.recall(N, K)))
-        print("训练集 Coverage : {}".format(self.coverage(self.trainset, N, K)))
-        print("测试集Coverage : {}".format(self.coverage(self.testset, N, K)))
+        print("Coverage : {}".format(self.coverage( N, K)))
     
-    def presion(self,N = 10,K = 80):
+    def precision(self,N = 10,K = 80):
         """"""
         hit = 0.
         all_p = 0.
         
-        for user,movies in self.testset.items():
+        for user,movies in self.trainset.items():
             rank = self.recommend(user, N, K)
-            for movie,rating in movies.items():
-                if movie in rank.keys():
+            test_movies = self.testset.get(user,{})
+            for movie,rating in rank.items():
+                if movie in test_movies.keys():
                     hit += 1.
-                all_p += len(movies)
+            all_p += N
         return hit / all_p
     
-    def coverage(self,dataset,N = 10,K = 80):
+    def coverage(self,N = 10,K = 80):
+        all_movie = set()
         recom_item = set()
-        all_item = set()
-        for user,movies in dataset.items(): 
-            for movie,rating in movies.items():
-                all_item.add(movie)
-                
+        for user,movies in self.trainset.items(): 
             rank = self.recommend(user, N, K);
             for movie in rank.keys():
                 recom_item.add(movie)
-        
-        return len(recom_item) / len(all_item)
+            for movie in movies.keys():
+                all_movie.add(movie) 
+        return len(recom_item) / len(all_movie)
     
     def recall(self,N = 10,K = 80):
         hit = 0.
         all_r = 0.
         
-        for user,movies in self.testset.items():
+        for user,movies in self.trainset.items():
             rank = self.recommend(user, N, K)
-            for movie,rating in movies.items():
-                if movie in rank.keys():
+            test_movie = self.testset.get(user,{})
+            for movie,rating in rank.items():
+                if movie in test_movie.keys():
                     hit += 1.
-                all_r += len(rank)
+            all_r += len(test_movie)
         return hit / all_r
         
         
@@ -157,10 +163,10 @@ class UserCF(object):
         with open(path,"rb") as f:
             self.user_sim_mat = pickle.load(f)
         return self.user_sim_mat
+    
         
 if __name__ == "__main__":
     usercf = UserCF()
-    usercf.read_data(pivot = 0.05)
+    usercf.read_data(pivot = 0.8)
     usercf.user_sim()
-    usercf.evalute()
-    
+    usercf.evalute(N = 10,K = 20)
