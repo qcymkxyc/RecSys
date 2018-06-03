@@ -5,8 +5,14 @@ Created on 2018年6月2日
 
 @author: qcymkxyc
 '''
-from util.delicious_reader import read_tag
+"""
+    基本的基于标签的推荐
+"""
+
+
+from util.delicious_reader import split_data
 from collections import defaultdict
+from util import metric
 
 class TAGRec(object):
     """根据标签推荐"""
@@ -31,7 +37,10 @@ class TAGRec(object):
             
     
     def recommend(self,user_id):
-        user_id = str(user_id)
+        """推荐
+            @param user_id:
+            @return: 推荐的dict ( item_id : 分数) 
+        """
         buyed_items = self.user_items[user_id]
         
         recommends = defaultdict(float)
@@ -44,14 +53,26 @@ class TAGRec(object):
             
             
 if __name__ == "__main__":
-    t = TAGRec()
-    s = "/home/qcymkxyc/mystyle/git/RecSys/data/delicious-2k/user_taggedbookmarks.dat"
-    data = read_tag(s)
-    t.init_states(data)
-#     for k,v in t.user_items['57'].items():
-#         print(k,v)
-    r = t.recommend(57)
-    for i,j in r.items():
-        print(i,j)
+    filename = "/home/qcymkxyc/mystyle/git/RecSys/data/delicious-2k/user_taggedbookmarks.dat"
+    tag_rec = TAGRec()
+    train_set,test_data = split_data(filename);
+    
+    
+    tag_rec.init_states(train_set)
+     
+    test_dict = defaultdict(list)
+    for user_id,bookmark_id,tag_id in test_data:
+        test_dict[user_id].append(bookmark_id)
+    
+    recommends = dict()
+    for user_id in list(test_dict.keys()):
+        recommends[user_id] = tag_rec.recommend(user_id).keys()
+    
+     
+    print("Precision : {}".format(metric.precision(recommends, test_dict)))
+    print("Recall : {}".format(metric.recall(recommends, test_dict)))
+         
+    
+    
 
     
