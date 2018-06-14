@@ -1,172 +1,107 @@
-#/usr/bin/python3
-#coding=utf8
+#! /usr/bin/python3
+# coding=utf-8
+'''
+Created on 2018年6月12日
 
-import random
+@author: qcymkxyc
+'''
 from collections import defaultdict
 import math
 from operator import itemgetter
-import pickle
-import os
 import sys
+from util.utils import load_file,save_file
 
 class UserCF(object):
-    """基于用户的协同过滤"""
+    """用户协同过滤"""
     def __init__(self):
-        self.trainset = dict()
-        self.testset = dict()
-        
-        #用户相似性矩阵
-        self.user_sim_mat = None
-        #电影个数
-        self.movie_count = 0
-        
+        pass
     
-    @staticmethod
-    def loadfile(self,path = "./data/ml-1m/ratings.dat"):
-        """载入文件"""
-        with open(path,"r") as f:
-            for i,line in enumerate(f):
-                yield line
-    
-    def read_data(self,path = "./data/ml-1m/ratings.dat",pivot=0.8):
-        """读取数据，并返回trainset和testset"""
-        for line in UserCF.loadfile(path):
-            user, movie, rating, _ = line.split('::')
-            if random.random() < pivot :
-                self.trainset.setdefault(user,{})
-                self.trainset[user][movie] = int(rating)
-            else:
-                self.testset.setdefault(user,{})
-                self.testset[user][movie] = int(rating)
-                
-    def user_sim(self,save = True):
-        """计算用户的相似程度矩阵,save表示是否保存相似矩阵"""
-        print("正在载入相似性矩阵....")
+    def train(self,origin_data,sim_matrix_path = "store/user_sim.pkl"):
+        """训练模型
+            @param origin_data: 原始数据 
+            @param sim_matrix_path:  协同矩阵保存的路径
+        """
+        self.origin_data = origin_data
+        #初始化训练集
+        self.__init_train(origin_data)
+        print("开始训练模型",file = sys.stderr)
         try:
-            self.user_sim_mat = self._load_user_sim()
-            print("载入相似性矩阵成功")
-            return self.user_sim_mat
-        except FileNotFoundError:
-            print("未找到形式性矩阵，正在准备重新计算..")
-            
-        print("正在计算用户相似性矩阵")
-        print("正在计算电影倒排矩阵.......")
-        #建立电影的倒排矩阵
-        movie_user_mat = dict()
-        for user,movies in self.trainset.items():
-            for movie,rating in movies.items():
-                movie_user_mat.setdefault(movie,set());
-                movie_user_mat[movie].add(user)
-        print("倒排矩阵计算完成")
-        
-        #统计电影的个数
-        self.movie_count = len(movie_user_mat)
-        
-        print("开始统计用户共同爱好电影个数.....")
-        #用户共同爱好电影个数统计
-        user_sim_mat = dict()
-        for movie,users in movie_user_mat.items():
-            for u in users:
-                for v in users:
-                    if u == v :
-                        continue
-                    user_sim_mat.setdefault(u,defaultdict(int))
-                    user_sim_mat[u][v] += 1
-        print("用户电影个数统计完成")
-                    
-        print("计算用户相似度矩阵....")
-        #建立用户相似度矩阵
-        W = dict()
-        for u,u_rel in user_sim_mat.items():
-            for v,rel_count in u_rel.items():
-                W.setdefault(u,{});
+            print("开始载入用户协同矩阵....",file = sys.stderr)
+            self.user_sim_matrix = load_file(sim_matrix_path)
+            print("载入协同过滤矩阵完成",file = sys.stderr)
+        except:
+            print("载入用户协同过滤矩阵失败，重新计算协同过滤矩阵",file = sys.stderr)
+            #计算用户协同矩阵
+            self.user_sim_matrix = self.user_similarity()
                 
-                u_movies = len(self.trainset[u])
-                v_movies = len(self.trainset[v])
-                W[u][v] = rel_count / math.sqrt(u_movies * v_movies)
-            
-        print("相似度矩阵计算完成")
-                
-        self.user_sim_mat = W
-        print("正在保存相似性矩阵...")
-        if save : self._save_user_sim()
-        print("保存完成")
+        print("开始保存协同过滤矩阵",file = sys.stderr)
+        save_file(sim_matrix_path, self.user_sim_matrix)
+        print("保存协同过滤矩阵完成",file = sys.stderr)
+        
+    def __init_train(self,origin_data):
+        """初始化训练集数据"""
+        self.train = dict()
+        for user,item,_ in origin_data:
+            self.train.setdefault(user,set())
+            self.train[user].add(item)
 
-        return W
+    def user_similarity(self):
+        """建立用户的协同过滤矩阵"""
+        #建立用户倒排表
+        item_user = dict()
+        for user,items in self.train.items():
+            for item in items:
+                item_user.setdefault(item,set())
+                item_user[item].add(user)
+                
+        #建立用户协同过滤矩阵
+        user_sim_matrix = dict()
+        N = defaultdict(int)    #记录用户购买商品数
+        for item,users in item_user.items():
+            for u in users:
+                N[u] += 1
+                for v in users:
+                    if u == v:
+                        continue
+                    user_sim_matrix.setdefault(u,defaultdict(int))
+                    user_sim_matrix[u][v] += 1
+        
+        #计算相关度
+        for u,related_users in user_sim_matrix.items():
+            for v,con_items_count in related_users.items():
+                user_sim_matrix[u][v] = con_items_count / math.sqrt(N[u] *  N[v])
+        
+        return user_sim_matrix 
     
     def recommend(self,user,N,K):
-        """向用户user推荐N个商品，K表示查找和user相似的K个用户"""
-        rank = dict()
-        for u,u_sim in sorted(self.user_sim_mat.get(user,{}).items(),\
-                              key = itemgetter(1),reverse = True)[:K]:
-            for movie,rating in self.trainset[u].items():
-                rank.setdefault(movie,0.);
-                rank[movie] += rating * u_sim
+        """推荐
+            @param user:   用户
+            @param N:    推荐的商品个数
+            @param K:    查找最相似的用户个数
+            @return: 商品字典 {商品 : 相似性打分情况}
+        """
+        related_items = self.train.get(user,set)
+        recommmens = dict()
+        for v,sim in sorted(self.user_sim_matrix.get(user,dict).items(),
+                            key = itemgetter(1),reverse = True)[:K]:
+            for item in self.train[v]:
+                if item in related_items:
+                    continue
+                recommmens.setdefault(item,0.)
+                recommmens[item] += sim 
         
-        return dict(sorted(rank.items(),key = itemgetter(1),reverse = True)[:N])
+        return dict(sorted(recommmens.items(),key = itemgetter(1),reverse = True)[ : N])
     
-    def evalute(self,N = 50,K = 80):
-        """"""
-        print("开始计算评价指标....")
-        print("Precision : {}".format(self.precision(N, K)))
-        print("Recall : {}".format(self.recall(N, K)))
-        print("Coverage : {}".format(self.coverage( N, K)))
-    
-    def precision(self,N = 10,K = 80):
-        """"""
-        hit = 0.
-        all_p = 0.
-        
-        for user,movies in self.trainset.items():
-            rank = self.recommend(user, N, K)
-            test_movies = self.testset.get(user,{})
-            for movie,rating in rank.items():
-                if movie in test_movies.keys():
-                    hit += 1.
-            all_p += N
-        return hit / all_p
-    
-    def coverage(self,N = 10,K = 80):
-        all_movie = set()
-        recom_item = set()
-        for user,movies in self.trainset.items(): 
-            rank = self.recommend(user, N, K);
-            for movie in rank.keys():
-                recom_item.add(movie)
-            for movie in movies.keys():
-                all_movie.add(movie) 
-        return len(recom_item) / len(all_movie)
-    
-    def recall(self,N = 10,K = 80):
-        hit = 0.
-        all_r = 0.
-        
-        for user,movies in self.trainset.items():
-            rank = self.recommend(user, N, K)
-            test_movie = self.testset.get(user,{})
-            for movie,rating in rank.items():
-                if movie in test_movie.keys():
-                    hit += 1.
-            all_r += len(test_movie)
-        return hit / all_r
-        
-        
-    def _save_user_sim(self,path = "store/user_sim.pkl"):
-        """存储用户相似性矩阵"""
-        dictory = path[:path.rfind("/")]
-        if not os.path.exists(dictory):
-            os.mkdir(dictory)
-        with open(path,"wb") as f:
-            pickle.dump(self.user_sim_mat,f)
-    
-    def _load_user_sim(self,path = "store/user_sim.pkl"):
-        with open(path,"rb") as f:
-            self.user_sim_mat = pickle.load(f)
-        return self.user_sim_mat
-    
-        
-if __name__ == "__main__":
-    usercf = UserCF()
-    usercf.read_data(pivot = 0.8)
-    usercf.user_sim()
-    usercf.evalute(N = 10,K = 20)
+    def recommend_users(self,users,N,K):
+        """推荐测试集
+            @param users:    用户list
+            @param N:    推荐的商品个数
+            @param K:    查找最相似的用户个数
+            @return: 推荐字典 {用户 : 推荐的商品的list}
+        """
+        recommends = dict()
+        for user in users:
+            user_recommends= list(self.recommend(user, N, K).keys())
+            recommends[user] = user_recommends
+            
+        return recommends 
