@@ -65,11 +65,25 @@ def coverage(recommends,all_items):
         @param all_items :  所有的items，为list或set类型 
     """
     recommend_items = set()
-    for user,items in recommends.items():
+    for _,items in recommends.items():
         for item in items:
             recommend_items.add(item)
     return len(recommend_items) / len(all_items)
 
+def popularity(item_popular,recommends):
+    """计算流行度
+        @param item_popular:  商品流行度　dict形式{ itemID : popularity}
+        @param recommends :  dict形式 { userID : Items }
+        @return: 平均流行度
+    """
+    popularity = 0. #流行度
+    n = 0.
+    for _,items in recommends.items():
+        for item in items:
+            popularity += math.log(1. + item_popular.get(item,0.))
+            n += 1
+    return popularity / n
+            
 
         
 
