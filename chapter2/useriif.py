@@ -36,7 +36,7 @@ class UserIIF(UserCF):
                     if u == v:
                         continue
                     user_sim_matrix.setdefault(u,defaultdict(int))
-                    user_sim_matrix[u][v] += 1. / math.log1p(len(item_user[item]))
+                    user_sim_matrix[u][v] += 1. / math.log(1 + len(item_user[item]))
         
         #计算相关度
         for u,related_users in user_sim_matrix.items():
