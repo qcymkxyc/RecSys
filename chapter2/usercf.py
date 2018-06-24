@@ -23,7 +23,7 @@ class UserCF(object):
         """
         self.origin_data = origin_data
         #初始化训练集
-        self.__init_train(origin_data)
+        self._init_train(origin_data)
         print("开始训练模型",file = sys.stderr)
         try:
             print("开始载入用户协同矩阵....",file = sys.stderr)
@@ -38,7 +38,7 @@ class UserCF(object):
         save_file(sim_matrix_path, self.user_sim_matrix)
         print("保存协同过滤矩阵完成",file = sys.stderr)
         
-    def __init_train(self,origin_data):
+    def _init_train(self,origin_data):
         """初始化训练集数据"""
         self.train = dict()
         for user,item,_ in origin_data:
