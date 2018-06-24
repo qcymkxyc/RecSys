@@ -15,7 +15,7 @@ def loadfile(filename):
         for line in f:
             yield line 
 
-def read_rating_data(path = "./data/ml-1m/ratings.dat",train_rate = 1.):
+def read_rating_data(path = "./data/ml-1m/ratings.dat",train_rate = 1.,seed = 1):
     """载入评分数据
         @param path:  文件路径
         @param train_rate:   训练集所占整个数据集的比例，默认为1，表示所有的返回数据都是训练集
@@ -24,6 +24,7 @@ def read_rating_data(path = "./data/ml-1m/ratings.dat",train_rate = 1.):
     trainset = list()
     testset = list()
     
+    random.seed(seed)
     for line in loadfile(filename = path):
         user, movie, rating, _ = line.split('::')
         if random.random() < train_rate:

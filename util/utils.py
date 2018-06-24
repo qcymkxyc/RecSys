@@ -14,6 +14,7 @@ def save_file(filepath,data):
         @param filepath:    保存路径
         @param data:    要保存的数据
     """
+    print(data)
     parent_path = filepath[ : filepath.rfind("/")]
     
     if not os.path.exists(parent_path):
