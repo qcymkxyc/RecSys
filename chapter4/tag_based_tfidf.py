@@ -1,48 +1,35 @@
-# ! /usr/bin/python3 
+#! /usr/bin/python3
 #coding=utf-8
 '''
-Created on 2018年6月2日
+Created on 2018年6月4日
 
 @author: qcymkxyc
 '''
-"""
-    基本的基于标签的推荐
-"""
-
-
+from chapter4.basic_tag_rec import TAGRec
+import math
 from util.delicious_reader import split_data
 from collections import defaultdict
 from util import metric
 
-class TAGRec(object):
-    """根据标签推荐"""
-    def __init__(self):
-        pass
-    
-    def init_states(self,data):
-        """初始化状态
-            @param data: 三元组（user_id,item_id,tag_id） 
-        """
-        self.user_tag = dict()
-        self.tag_items = dict()
-        self.user_items = dict()
+class TagBasedTFIDF(TAGRec):
+    """TagBasedTFIDF算法
+    """
+    def init_states(self, data):
+        TAGRec.init_states(self, data)
         
-        for user_id,item_id,tag_id in data:
-            self.user_tag.setdefault(user_id,defaultdict(int))
-            self.user_tag[user_id][tag_id] += 1
+        #记录
+        self.tag_user= dict()
+        for sub_data in data:
+            user_id = sub_data[0]
+            tag_id = sub_data[-1]
+            self.tag_user.setdefault(tag_id,set)
+            self.tag_user[tag_id].add(user_id)
             
-            self.tag_items.setdefault(tag_id,defaultdict(int))
-            self.tag_items[tag_id][item_id] += 1
             
-            self.user_items.setdefault(user_id,defaultdict(int))
-            self.user_items[user_id][item_id] += 1
-            
-    
-    def recommend(self,user_id,N = 20):
+    def recommend(self,user_id):
         """推荐
             @param user_id:
-            @param N:  推荐多少个 
-            @return: 推荐的dict ( item_id : 分数)
+            @return: 推荐的dict ( item_id : 分数) 
         """
         buyed_items = self.user_items[user_id]
         
@@ -51,13 +38,10 @@ class TAGRec(object):
             for item,item_time in self.tag_items[tag].items():
                 if item in buyed_items:
                     continue
-                recommends[item] += tag_time * item_time
-        
-        sorted_recommend_key = sorted(recommends,reverse = True)
-        recommends = {item_id : recommends[item_id] for item_id in sorted_recommend_key[:N]}
+                recommends[item] += (tag_time / math.log(1 + len(self.tag_user[tag]))) * item_time
         return recommends 
-            
-            
+    
+    
 if __name__ == "__main__":
     filename = "/home/qcymkxyc/mystyle/git/RecSys/data/delicious-2k/user_taggedbookmarks.dat"
     tag_rec = TAGRec()
@@ -77,8 +61,5 @@ if __name__ == "__main__":
      
     print("Precision : {}".format(metric.precision(recommends, test_dict)))
     print("Recall : {}".format(metric.recall(recommends, test_dict)))
-         
     
-    
-
     
