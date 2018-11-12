@@ -36,4 +36,5 @@
    * [基本基于标签推荐](chapter4/base_rec.py)
    * [TF-IDF的改进版](chapter4/TFIDF_rec.py)
    * [TF-IDF++的改进版](chapter4/TFIDF_plus_rec.py)
+   * [标签协同过滤的用户冷启动改进](chapter4/sim_tag_rec.py)
 

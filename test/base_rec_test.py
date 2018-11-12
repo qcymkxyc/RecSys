@@ -20,7 +20,7 @@ class BaseRecTestCase(unittest.TestCase):
 
     def test_recommend(self):
         """测试单个用户推荐"""
-        data = delicious_reader.read_tag("../data/delicious-2k/user_taggedbookmarks-timestamps.dat",1)
+        data = delicious_reader.read_tag("../data/delicious-2k/user_taggedbookmarks-timestamps.dat", 1)
         base_rec_model = BaseRec()
 
         # 未训练
