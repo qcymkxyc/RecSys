@@ -8,6 +8,8 @@ Created on 2018年6月2日
 关于delicious数据集读取集
 """
 import random
+from util import utils
+import datetime
 
 
 def read_tag(filename, skip_row=0):
@@ -55,3 +57,22 @@ def split_data(filename, k=0, cv_folder=10, seed=1, skip_row=1):
             train_set.append(sub_data)
 
     return train_set, test_set
+
+
+def read_tag_time(filename):
+    """读取标签以及时间序列
+
+    :param filename: str
+        文件名
+    :return: list(list(int, int, int,datetime.datetime))
+        [[用户ID,商品ID,标签ID,打标签时间]]
+    """
+    data = list()
+    for line in utils.open_text(filename, skip_row=1):
+        lines = line.split()
+        user_id, item_id, tag_id, timestamp = [int(i) for i in lines]
+        timestamp = timestamp // 1000
+        tag_time = datetime.datetime.fromtimestamp(timestamp)
+        data.append([user_id, item_id, tag_id, tag_time])
+
+    return data

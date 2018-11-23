@@ -3,6 +3,9 @@
 
 >[Recommend System](Recommend%20System.ipynb)
 
+测试用例见:
+>[Tests](test)
+
 ## 第一章
 第一章主要介绍一些推荐系统的评价指标
 
@@ -37,4 +40,7 @@
    * [TF-IDF的改进版](chapter4/TFIDF_rec.py)
    * [TF-IDF++的改进版](chapter4/TFIDF_plus_rec.py)
    * [标签协同过滤的用户冷启动改进](chapter4/sim_tag_rec.py)
+
+# 第五章
+
 
