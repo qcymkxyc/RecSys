@@ -1,6 +1,6 @@
 import unittest
-from chapter4 import sim_tag_rec
-from util import delicious_reader
+from main.chapter4 import sim_tag_rec
+from main.util import delicious_reader
 import copy
 
 

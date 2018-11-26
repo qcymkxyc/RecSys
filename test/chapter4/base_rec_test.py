@@ -12,8 +12,8 @@
 
 """
 import unittest
-from util import delicious_reader
-from chapter4.base_rec import BaseRec
+from main.util import delicious_reader
+from main.chapter4 import BaseRec
 
 
 class BaseRecTestCase(unittest.TestCase):

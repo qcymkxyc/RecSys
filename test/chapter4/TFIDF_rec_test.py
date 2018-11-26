@@ -12,15 +12,15 @@
 
 """
 import unittest
-from util import delicious_reader
-from chapter4.TFIDF_rec import TagBasedTFIDF
+from main.util import delicious_reader
+from main.chapter4 import TagBasedTFIDF
 
 
 class BaseRecTestCase(unittest.TestCase):
 
     def test_recommend(self):
         """测试单个用户推荐"""
-        data = delicious_reader.read_tag("../data/delicious-2k/user_taggedbookmarks-timestamps.dat",1)
+        data = delicious_reader.read_tag("../data/delicious-2k/user_taggedbookmarks-timestamps.dat", 1)
         base_rec_model = TagBasedTFIDF()
 
         # 未训练

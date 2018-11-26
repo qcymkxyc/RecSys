@@ -10,7 +10,7 @@
 
 """
 import unittest
-from chapter2 import personalrank
+
 
 class PersonalRankTestCase(unittest.TestCase):
     pass
