@@ -34,7 +34,7 @@
 
 ## 第四章
 
-介绍基于标签的推荐。数据集用[Delicious](data/delicious-2k/readme.txt)数据集(对于冷启动问题推荐热门商品)。
+介绍基于UGC的推荐。数据集用[Delicious](data/delicious-2k/readme.txt)数据集(对于冷启动问题推荐热门商品)。
 
    * [基本基于标签推荐](main/chapter4/base_rec.py)
    * [TF-IDF的改进版](main/chapter4/TFIDF_rec.py)
@@ -45,6 +45,6 @@
 
 主要讲时间上下文的推荐算法
 
-   * [最近热门商品](main/chapter5/most_popularity.py)
+   * [最近热门商品推荐](main/chapter5/most_popularity.py)
 
 
