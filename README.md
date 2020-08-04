@@ -1,4 +1,6 @@
 # RecSys
+> 个人博客:http://blog.zhangqi2019.top
+
 项亮的《推荐系统实践》的代码实现以及结果展示分析，所有结果见:
 
 >[Recommend System](Recommend%20System.ipynb)
