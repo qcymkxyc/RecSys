@@ -3,8 +3,10 @@
 
 * 另这是本人工作之余对《数字图像处理》（冈萨雷斯，第三版）的实现，欢迎Star：https://github.com/qcymkxyc/Image-Process
 
+* 个人博客：http://www.zhangqi2019.top
 ------
-> 个人博客:http://blog.zhangqi2019.top
+
+* **本书PDF在线预览：http://www.ailearndo.com/resource/推荐系统实践.pdf**
 
 项亮的《推荐系统实践》的代码实现以及结果展示分析，所有结果见:
 
