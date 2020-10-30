@@ -10,7 +10,7 @@
 
 项亮的《推荐系统实践》的代码实现以及结果展示分析，所有结果见:
 
->[Recommend System](Recommend%20System.ipynb)
+>[Recommend System](https://nbviewer.jupyter.org/github/qcymkxyc/RecSys/blob/master/Recommend%20System.ipynb)
 
 测试用例见:
 >[Tests](test)
